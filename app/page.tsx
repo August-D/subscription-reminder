@@ -174,7 +174,7 @@ export default function HomePage() {
 
       <DetectiveSection subscriptions={subscriptions} />
 
-      <div style={{ marginBottom: 20 }}>
+      <div style={{ marginBottom: 32 }}>
         <button className="btn btn-primary" onClick={openAddModal}>
           + 添加订阅
         </button>

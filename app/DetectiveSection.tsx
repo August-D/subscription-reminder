@@ -39,41 +39,43 @@ export default function DetectiveSection({ subscriptions }: { subscriptions: any
 
   return (
     <div className="mt-8 p-6 bg-slate-900 border border-slate-800 rounded-xl max-w-2xl mx-auto shadow-lg text-white">
-      <div className="flex items-center justify-between mb-4">
-        <div>
+      <div className="flex items-center justify-between mb-8">
+        <div className="flex-1">
           <h3 className="text-lg font-bold text-amber-400 flex items-center gap-2">
-            🕵️‍♂️ 资本主义逆子 · 订阅毒舌侦探
+            🕵️‍♂️ 资本主义逆子 <span className="text-xs text-slate-400">一键审判你的赛博供奉，戳穿中产阶级幻觉</span>
           </h3>
-          <p className="text-xs text-slate-400 mt-1">一键审判你的赛博供奉，戳穿中产阶级幻觉</p>
         </div>
-        
+
         <button
           onClick={handleAnnihilateWallet}
           disabled={loading}
-          className={`px-4 py-2 rounded-lg font-medium text-sm transition-all duration-200 ${
-            loading 
-              ? 'bg-slate-700 text-slate-400 cursor-not-allowed animate-pulse' 
-              : 'bg-amber-500 hover:bg-amber-600 text-slate-950 active:scale-95 shadow-md shadow-amber-500/20'
-          }`}
+          className="btn btn-primary"
         >
-          {loading ? '⚡️ 正在无情解剖中...' : '⚡️ 申请暴力审判'}
+          {loading ? '正在无情解剖中...' : '申请暴力审判'}
         </button>
       </div>
 
-      {error && (
-        <div className="p-3 bg-red-950/50 border border-red-800/50 text-red-400 text-sm rounded-lg">
-          ❌ {error}
-        </div>
-      )}
+      {/* 审判结果展示框 */}
+      <div className="mt-6 p-4 bg-gray-50 rounded-lg border border-gray-200">
+        {loading ? (
+          <p className="text-sm text-gray-600">侦探正在顺着网线窥探你的账单...请稍候...</p>
+        ) : report ? (
+          <>
+            <div className="inline-block px-3 py-1 text-xs font-semibold bg-amber-500/10 text-amber-400 border border-amber-500/20 rounded mb-3">
+              🏆 诊断称号：{report.title}
+            </div>
+            <p className="text-sm text-gray-700 leading-relaxed italic">
+              " {report.report} "
+            </p>
+          </>
+        ) : (
+          <p className="text-sm text-gray-400">暂无审判。请点击上方按钮，召唤资本主义逆子...</p>
+        )}
+      </div>
 
-      {report && (
-        <div className="mt-4 p-4 bg-slate-950/60 border border-amber-500/30 rounded-lg animate-fadeIn">
-          <div className="inline-block px-2 py-0.5 text-xs font-semibold bg-amber-500/10 text-amber-400 border border-amber-500/20 rounded mb-2">
-            🏆 诊断称号：{report.title}
-          </div>
-          <p className="text-sm text-slate-300 leading-relaxed italic">
-            “ {report.report} ”
-          </p>
+      {error && (
+        <div className="p-3 bg-red-950/50 border border-red-800/50 text-red-400 text-sm rounded-lg mt-4">
+          ❌ {error}
         </div>
       )}
     </div>
