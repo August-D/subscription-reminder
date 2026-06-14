@@ -3,7 +3,15 @@
 import { useState, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 
-interface SubscriptionDetection {
+type CsvRow = {
+  date: string
+  merchant: string
+  amount: number
+  note: string
+  dateObj?: Date
+}
+
+type DetectedSubscription = {
   merchantName: string
   averageAmount: number
   period: 'monthly' | 'quarterly' | 'yearly'
@@ -13,9 +21,9 @@ interface SubscriptionDetection {
 }
 
 export default function ImportPage() {
-  const [csvData, setCsvData] = useState<string[]>([])
+  const [csvData, setCsvData] = useState<CsvRow[]>([])
   const [isLoading, setIsLoading] = useState(false)
-  const [检测结果, set检测结果] = useState<SubscriptionDetection[]>([])
+  const [检测结果, set检测结果] = useState<DetectedSubscription[]>([])
   const [selectedItems, setSelectedItems] = useState<Set<string>>(new Set())
   const fileInputRef = useRef<HTMLInputElement>(null)
   const router = useRouter()
@@ -55,11 +63,11 @@ export default function ImportPage() {
     }
   }
 
-  const detectSubscriptions = (data) => {
+  const detectSubscriptions = (data: CsvRow[]) => {
     // 按商家名称分组
     const merchantGroups = new Map()
 
-    data.forEach(item => {
+    data.forEach((item: CsvRow) => {
       if (!item.date || !item.merchant) return
 
       const dateObj = new Date(item.date)
@@ -75,16 +83,16 @@ export default function ImportPage() {
       })
     })
 
-    const results = []
+    const results: DetectedSubscription[] = []
 
-    merchantGroups.forEach((transactions, merchantName) => {
+    merchantGroups.forEach((transactions: Array<{date: string, amount: number, dateObj: Date}>, merchantName: string) => {
       if (transactions.length < 2) return // 至少需要2条记录
 
       // 按日期排序
-      transactions.sort((a, b) => a.dateObj.getTime() - b.dateObj.getTime())
+      transactions.sort((a: {dateObj: Date}, b: {dateObj: Date}) => a.dateObj.getTime() - b.dateObj.getTime())
 
       // 检查金额一致性
-      const amounts = transactions.map(t => t.amount)
+      const amounts = transactions.map((t: {amount: number}) => t.amount)
       const avgAmount = amounts.reduce((sum, a) => sum + a, 0) / amounts.length
       const amountVariance = Math.max(...amounts) - Math.min(...amounts)
       const amountMatch = amountVariance / avgAmount < 0.05 // 金额相差 <5%
@@ -92,7 +100,7 @@ export default function ImportPage() {
       if (!amountMatch) return
 
       // 计算时间间隔
-      const intervals = []
+      const intervals: number[] = []
       for (let i = 1; i < transactions.length; i++) {
         const diff = transactions[i].dateObj.getTime() - transactions[i-1].dateObj.getTime()
         intervals.push(Math.floor(diff / (1000 * 60 * 60 * 24))) // 转换为天数
@@ -102,8 +110,8 @@ export default function ImportPage() {
       const avgInterval = intervals.reduce((sum, i) => sum + i, 0) / intervals.length
 
       // 判断周期
-      let period = null
-      let confidence = 'low'
+      let period: 'monthly' | 'quarterly' | 'yearly' | null = null
+      let confidence: 'high' | 'medium' | 'low' = 'low'
 
       if (avgInterval >= 26 && avgInterval <= 34) {
         period = 'monthly'
@@ -130,7 +138,7 @@ export default function ImportPage() {
 
     set检测结果(results)
     // 默认选中所有
-    setSelectedItems(new Set(results.map(r => r.merchantName)))
+    setSelectedItems(new Set(results.map((r: DetectedSubscription) => r.merchantName)))
   }
 
   const handleDragOver = (e: React.DragEvent) => {
@@ -170,7 +178,7 @@ export default function ImportPage() {
 
     setIsLoading(true)
     try {
-      const itemsToAdd =检测结果.filter(r => selectedItems.has(r.merchantName))
+      const itemsToAdd =检测结果.filter((r: DetectedSubscription) => selectedItems.has(r.merchantName))
 
       for (const item of itemsToAdd) {
         // 计算下次扣费日期 = 最后一次扣费日期 + 一个周期
